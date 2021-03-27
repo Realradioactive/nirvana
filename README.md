@@ -1,6 +1,6 @@
 
 <p align="center">
-    ![nirvana](https://user-images.githubusercontent.com/61369603/112726486-c6b5c180-8f2e-11eb-970f-c6e6b1b62333.png)
+    [nirvana](https://user-images.githubusercontent.com/61369603/112726486-c6b5c180-8f2e-11eb-970f-c6e6b1b62333.png)
     <p align="center">
        Nirvana - hacklenmiş e mail ve şifre bilgisi kontrolü.
 	   Bu program darknet ağından sızıntı şifreleri tespit eder. penetration testi için düzenlenmiştir.
