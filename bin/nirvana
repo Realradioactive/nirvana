@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+
+from os import path
+
+import logging
+import json
+import time
+import sys
+
+try:
+    sys.path.insert(0, path.abspath(path.join(path.dirname(__file__), "..")))
+    from nirvana.version import __author__, __version__
+    from texttable import Texttable
+    from docopt import docopt
+    from nirvana import banner, core, formatter
+except Exception as e:
+    raise e
+
+
+usage = """nirvana {}
+
+Usage:
+    nirvana.py target <target> [-o FILENAME] [--proxy=<proxy>]
+    nirvana.py search <target> (--password | --just-name | --domain) 
+                             [-o FILENAME] [--proxy=<proxy>]
+    nirvana.py (-h | --help)
+    nirvana.py --version
+
+Options:
+    -o --output         Save output in json format. - Çıktıyı json biçiminde kaydedin.
+    --proxy=<proxy>     Set Tor proxy [default: localhost:9050].
+    -h --help           Show this screen. - Yardım ekranını gösterir
+    --version           Show version - versiyonu gösterir
+""".format(
+    __version__
+)
+
+
+def print_result_table(result, start_time):
+
+    table = Texttable()
+    table.header(["Email", "Password"])
+    table.set_cols_dtype(["t", "t"])
+    table.set_deco(Texttable.BORDER | Texttable.HEADER | Texttable.VLINES)
+
+    for key in result.keys():
+        email = result[key]["email"]
+        passw = str(result[key]["passw"])
+        row = (email, passw)
+        table.add_row(row)
+
+    print(table.draw())
+    logger.info(
+        "{} results found in {:.2f}s".format(
+            len(result.keys()), time.time() - start_time
+        )
+    )
+
+
+def generate_json_file(result, filename):
+
+    if not filename:
+        filename = time.strftime("%d%m%y-%H%M%S")
+    output = json.dumps(result, indent=2)
+    f = open("%s.json" % filename, "w")
+    f.write(output)
+    f.close()
+
+    logger.info("the file {}.json was created".format(filename))
+
+
+def set_logger():
+
+    global logger
+    logger = logging.getLogger("nirvana")
+    logger.setLevel(logging.DEBUG)
+    logger_ch = logging.StreamHandler()
+    logger_ch.setLevel(logging.DEBUG)
+    logger_ch.setFormatter(formatter.CustomFormatter())
+    logger.addHandler(logger_ch)
+
+
+def main():
+
+    # get program start time
+    start = time.time()
+
+    set_logger()
+    args = docopt(usage, version=__version__)
+    pwndb = core.pwndb(args)
+    banner.print_banner("nirvana", __version__, __author__)
+
+    logger.info("starting search")
+    result = pwndb.search_info()
+    print_result_table(result, start)
+
+    if args["--output"]:
+        filename = args["FILENAME"]
+        generate_json_file(result, filename)
+
+
+if __name__ == "__main__":
+    main()
